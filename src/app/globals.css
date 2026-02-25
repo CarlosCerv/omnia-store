@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme {
+  /* Nordic Gallery Color Palette */
+  --color-nordic-bg: #FDFDFB;
+  /* Warm Eggshell White */
+  --color-nordic-text: #1A1A1A;
+  /* Deep Graphite */
+  --color-nordic-muted: #707070;
+  /* Slate Gray */
+  --color-nordic-border: #E8E8E2;
+  /* Discrete Sand Border */
+  --color-nordic-accent: #000000;
+  /* Pure Black for emphasis */
+
+  /* Spacing Tokens (Generous) */
+  --spacing-section: 10rem;
+  --spacing-gallery-gap: 4rem;
+
+  /* Font Families */
+  --font-serif: "Outfit", var(--font-inter), sans-serif;
+  /* Using Outfit as primary heading */
+  --font-inter: var(--font-inter), sans-serif;
+}
+
+@layer base {
+  :root {
+    --nordic-bg: #FDFDFB;
+    --nordic-text: #1A1A1A;
+  }
+
+  body {
+    background-color: var(--nordic-bg);
+    color: var(--nordic-text);
+    font-family: var(--font-inter);
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.01em;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    text-transform: none;
+  }
+}
+
+@layer utilities {
+  .section-padding {
+    padding-top: var(--spacing-section);
+    padding-bottom: var(--spacing-section);
+  }
+
+  .gallery-grid {
+    display: grid;
+    gap: var(--spacing-gallery-gap);
+  }
+
+  .nordic-card {
+    background: white;
+    padding: 2rem;
+    border: 1px solid var(--color-nordic-border);
+    transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .nordic-card:hover {
+    border-color: var(--color-nordic-accent);
+    transform: translateY(-4px);
+  }
+}

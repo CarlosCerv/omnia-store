@@ -1,0 +1,85 @@
+// OMNIA Startup Core Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  price       Float
+  category    String
+  image       String
+  images      String[]
+  description String
+  badge       String?
+  colors      Json[]   // List of {name, hex, border}
+  sizes       String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orderItems  OrderItem[]
+}
+
+model Promotion {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  image       String
+  active      Boolean  @default(true)
+  type        String   // 'hero', 'bar', 'card'
+  ctaText     String?
+  ctaLink     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  customerName  String
+  customerEmail String
+  date          DateTime    @default(now())
+  total         Float
+  status        String      @default("Pendiente") // 'Pendiente', 'Procesando', 'Enviado', 'Entregado', 'Cancelado'
+  
+  items         OrderItem[]
+  customer      Customer?   @relation(fields: [customerId], references: [id])
+  customerId    String?
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  productSlug String
+  productName String
+  quantity    Int
+  price       Float
+  
+  order       Order    @relation(fields: [orderId], references: [id])
+  orderId     String
+  
+  product     Product? @relation(fields: [productId], references: [id])
+  productId   String?
+}
+
+model Customer {
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  phone       String?
+  totalOrders Int      @default(0)
+  totalSpent  Float    @default(0)
+  joined      DateTime @default(now())
+  
+  orders      Order[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
