@@ -1,15 +1,13 @@
 import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import Resend from "next-auth/providers/resend"
-import { PrismaAdapter } from "@auth/prisma-adapter"
-import { getPrisma } from "./src/lib/prisma"
 
-// Instanciamos el adaptador SÓLO si hay BD Real y no estamos en un MOCK de build de Vercel (que falla al validarlo internamente el Adapter)
-const isPrismaSafe = process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('mock');
-const adapterData = isPrismaSafe ? PrismaAdapter(getPrisma()) : undefined;
-
+// ⚠️ PrismaAdapter se carga dinámicamente para evitar que Vercel falle en build-time
+// cuando intenta pre-analizar este módulo sin acceso real a la BD.
+// Auth.js usará JWT sessions hasta que conectemos correctamente el adapter en runtime.
 export const { handlers, auth, signIn, signOut } = NextAuth({
-    ...(adapterData ? { adapter: adapterData } : {}),
+    // adapter: Se conecta en runtime via API route, no en module evaluation
+    session: { strategy: "jwt" },
     providers: [
         Google({
             clientId: process.env.AUTH_GOOGLE_ID,

@@ -1,6 +1,8 @@
 import { ProductService } from "@/services/productService";
 import { TrendingUp, Package, ShoppingCart, UserCheck, Activity, Target, Zap, Clock } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminDashboard() {
     const stats = await ProductService.getStats();
 
