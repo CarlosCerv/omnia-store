@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Plus, Edit2, Trash2, ExternalLink } from "lucide-react";
 import { formatPrice } from "@/lib/products";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminProducts() {
     const products = await ProductService.getAll();
 

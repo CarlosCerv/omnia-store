@@ -2,10 +2,14 @@ import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import Resend from "next-auth/providers/resend"
 import { PrismaAdapter } from "@auth/prisma-adapter"
-import prisma from "./src/lib/prisma"
+import { getPrisma } from "./src/lib/prisma"
+
+// Instanciamos el adaptador SÓLO si hay BD Real y no estamos en un MOCK de build de Vercel (que falla al validarlo internamente el Adapter)
+const isPrismaSafe = process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('mock');
+const adapterData = isPrismaSafe ? PrismaAdapter(getPrisma()) : undefined;
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-    adapter: PrismaAdapter(prisma),
+    ...(adapterData ? { adapter: adapterData } : {}),
     providers: [
         Google({
             clientId: process.env.AUTH_GOOGLE_ID,

@@ -1,18 +1,20 @@
-import prisma from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { Product as ProductType, Color } from "@/types";
 import { CATEGORIES } from "@/lib/products";
 
 export class ProductService {
 
   static async getAll() {
-    const products = await prisma.product.findMany({
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL.includes("mock")) return [];
+    const products = await getPrisma().product.findMany({
       orderBy: { createdAt: 'desc' }
     });
     return products as unknown as ProductType[];
   }
 
   static async getBySlug(slug: string) {
-    const product = await prisma.product.findUnique({
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL.includes("mock")) return null;
+    const product = await getPrisma().product.findUnique({
       where: { slug }
     });
     return product as unknown as ProductType | null;
@@ -20,7 +22,8 @@ export class ProductService {
 
   static async getByCategory(categorySlug: string) {
     if (categorySlug === "todo") return this.getAll();
-    const products = await prisma.product.findMany({
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL.includes("mock")) return [];
+    const products = await getPrisma().product.findMany({
       where: { category: categorySlug },
       orderBy: { createdAt: 'desc' }
     });
@@ -33,7 +36,7 @@ export class ProductService {
   }
 
   static async create(product: ProductType) {
-    const newProduct = await prisma.product.create({
+    const newProduct = await getPrisma().product.create({
       data: {
         slug: product.slug,
         name: product.name,
@@ -51,7 +54,7 @@ export class ProductService {
   }
 
   static async update(slug: string, updates: Partial<ProductType>) {
-    const updatedProduct = await prisma.product.update({
+    const updatedProduct = await getPrisma().product.update({
       where: { slug },
       data: {
         ...updates as any
@@ -61,17 +64,18 @@ export class ProductService {
   }
 
   static async delete(slug: string) {
-    await prisma.product.delete({
+    await getPrisma().product.delete({
       where: { slug }
     });
     return true;
   }
 
   static async getStats() {
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL.includes("mock")) return { totalProducts: 0, totalSales: 0, totalOrders: 0 };
     // Real stats from DB
-    const totalProducts = await prisma.product.count();
-    const totalOrdersCount = await prisma.order.count();
-    const aggregateSales = await prisma.order.aggregate({
+    const totalProducts = await getPrisma().product.count();
+    const totalOrdersCount = await getPrisma().order.count();
+    const aggregateSales = await getPrisma().order.aggregate({
       _sum: {
         total: true
       }

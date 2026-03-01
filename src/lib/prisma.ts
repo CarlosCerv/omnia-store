@@ -1,15 +1,19 @@
 import { PrismaClient } from "@prisma/client";
 
-const prismaClientSingleton = () => {
-    return new PrismaClient();
+// Exportamos Prisma mediante una función getter para evitar ejecución estática al ser importado.
+export const getPrisma = () => {
+    if (!process.env.DATABASE_URL) {
+        console.warn("No DATABASE_URL found. Prisma Mock used.");
+        return {} as PrismaClient;
+    }
+
+    if (process.env.NODE_ENV === "production") {
+        return new PrismaClient();
+    }
+
+    // Evitar sobrecargar conexiones en Dev (Hot Reloading)
+    if (!(globalThis as any).prisma) {
+        (globalThis as any).prisma = new PrismaClient();
+    }
+    return (globalThis as any).prisma;
 };
-
-declare global {
-    var prisma: undefined | ReturnType<typeof prismaClientSingleton>;
-}
-
-const prisma = globalThis.prisma ?? prismaClientSingleton();
-
-export default prisma;
-
-if (process.env.NODE_ENV !== "production") globalThis.prisma = prisma;

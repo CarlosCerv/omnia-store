@@ -57,7 +57,7 @@ export default async function AdminDashboard() {
                         <button className="text-[10px] uppercase tracking-widest font-bold text-nordic-muted hover:text-nordic-accent">Ver Archivo</button>
                     </div>
                     <div className="space-y-6">
-                        {[1, 2, 3].map((i) => (
+                        {[1, 2, 3].map((i, idx) => (
                             <div key={i} className="flex items-center justify-between p-10 bg-white border border-nordic-border rounded-3xl hover:border-nordic-accent transition-all cursor-pointer group hover:shadow-2xl hover:shadow-black/5">
                                 <div className="flex items-center gap-10">
                                     <div className="w-20 h-20 bg-nordic-bg rounded-2xl flex items-center justify-center font-bold text-2xl text-nordic-muted group-hover:bg-nordic-accent group-hover:text-white transition-all">
