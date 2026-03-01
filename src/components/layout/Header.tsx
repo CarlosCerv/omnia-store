@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ShoppingBag, Search, User, Menu, X } from "lucide-react";
+import { useSession, signIn, signOut } from "next-auth/react";
+import { ShoppingBag, Search, User, Menu, X, LogOut } from "lucide-react";
 import { useCart } from "@/context/CartProvider";
 import { PROMOTIONS } from "@/lib/promotions";
 
 export default function Header() {
+    const { data: session } = useSession();
     const [isScrolled, setIsScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { openCart, cartCount } = useCart();
@@ -54,10 +56,17 @@ export default function Header() {
                             <Search size={18} strokeWidth={1.5} />
                         </button>
 
-                        <Link href="/dashboard" className="hidden sm:flex items-center gap-2 hover:text-nordic-accent transition-colors" title="Mi Cuenta">
-                            <User size={18} strokeWidth={1.5} />
-                            <span className="text-[10px] uppercase tracking-widest font-black hidden lg:inline">Cuenta</span>
-                        </Link>
+                        {session ? (
+                            <Link href="/dashboard" className="hidden sm:flex items-center gap-2 hover:text-nordic-accent transition-colors" title="Mi Cuenta">
+                                <User size={18} strokeWidth={1.5} />
+                                <span className="text-[10px] uppercase tracking-widest font-black hidden lg:inline">Cuenta</span>
+                            </Link>
+                        ) : (
+                            <button onClick={() => signIn()} className="hidden sm:flex items-center gap-2 hover:text-nordic-accent transition-colors" title="Iniciar Sesión">
+                                <User size={18} strokeWidth={1.5} />
+                                <span className="text-[10px] uppercase tracking-widest font-black hidden lg:inline">Sign In</span>
+                            </button>
+                        )}
 
                         <button
                             onClick={openCart}
@@ -90,7 +99,11 @@ export default function Header() {
                         <nav className="flex flex-col gap-10">
                             <Link href="/productos" onClick={() => setMobileMenuOpen(false)} className="font-bold text-5xl tracking-tight">Catálogo</Link>
                             <Link href="#about" onClick={() => setMobileMenuOpen(false)} className="font-bold text-5xl tracking-tight">Estudio</Link>
-                            <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="font-bold text-5xl tracking-tight text-nordic-muted">Mi Cuenta</Link>
+                            {session ? (
+                                <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="font-bold text-5xl tracking-tight text-nordic-muted">Mi Cuenta</Link>
+                            ) : (
+                                <button onClick={() => { setMobileMenuOpen(false); signIn(); }} className="font-bold text-5xl tracking-tight text-nordic-muted text-left">Sign In</button>
+                            )}
                         </nav>
                     </div>
                 )}
