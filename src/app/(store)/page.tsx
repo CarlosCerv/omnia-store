@@ -66,11 +66,11 @@ export default function HomePage() {
               className="group"
             >
               <Link href="/productos" className="block space-y-12">
-                <div className="aspect-[4/5] overflow-hidden bg-[#F5F5F0]">
+                <div className="aspect-[4/5] min-h-[340px] overflow-hidden bg-[#EBEBEB]">
                   <img
                     src={item.img}
                     alt={item.name}
-                    className="w-full h-full object-cover grayscale transition-all duration-1000 group-hover:grayscale-0 group-hover:scale-105"
+                    className="w-full h-full object-cover md:grayscale transition-all duration-1000 group-hover:grayscale-0 group-hover:scale-105"
                   />
                 </div>
                 <div className="flex items-start justify-between">

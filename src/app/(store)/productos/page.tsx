@@ -48,11 +48,11 @@ function ProductCatalogInner() {
                             transition={{ duration: 0.8, delay: idx * 0.1 }}
                         >
                             <Link href={`/productos/${product.slug}`} className="group block space-y-10">
-                                <div className="aspect-[3/4] overflow-hidden bg-[#F5F5F0] border border-nordic-border">
+                                <div className="aspect-[3/4] min-h-[320px] overflow-hidden bg-[#EBEBEB] border border-nordic-border">
                                     <img
                                         src={product.image}
                                         alt={product.name}
-                                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 grayscale hover:grayscale-0"
+                                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 md:grayscale group-hover:grayscale-0"
                                     />
                                 </div>
 
