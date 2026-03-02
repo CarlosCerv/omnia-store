@@ -96,7 +96,7 @@ export default function NavigationDropdown() {
                                 <div className="w-28 h-36 bg-[#EBEBEB] shrink-0 overflow-hidden">
                                     <img
                                         src="/images/products/signature-black-orig.png"
-                                        alt="Serie v1"
+                                        alt="Omnia Signature Black"
                                         className="w-full h-full object-cover grayscale"
                                     />
                                 </div>

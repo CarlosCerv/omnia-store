@@ -55,8 +55,8 @@ export default function HomePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-x-24 gap-y-48">
           {[
-            { name: "Signature Black v1", price: "$1,800 MXN", img: "/images/products/signature-black-orig.png" },
-            { name: "Architect White v2", price: "$1,800 MXN", img: "/images/products/signature-white-orig.png" }
+            { name: "Omnia Signature Black", slug: "omnia-signature-black", price: "$1,800 MXN", img: "/images/products/signature-black-orig.png" },
+            { name: "Omnia Signature White", slug: "omnia-signature-white", price: "$1,800 MXN", img: "/images/products/signature-white-orig.png" }
           ].map((item, idx) => (
             <motion.div
               key={idx}
@@ -66,7 +66,7 @@ export default function HomePage() {
               transition={{ duration: 1, delay: idx * 0.2 }}
               className="group"
             >
-              <Link href="/productos" className="block space-y-12">
+              <Link href={`/productos/${item.slug}`} className="block space-y-12">
                 <div className="aspect-[4/5] min-h-[340px] overflow-hidden bg-[#EBEBEB]">
                   <img
                     src={item.img}
