@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { PROMOTIONS } from "@/lib/promotions";
+import NewsletterCapture from "@/components/NewsletterCapture";
 
 export default function HomePage() {
   const heroPromo = PROMOTIONS.find(p => p.type === 'hero' && p.active);
@@ -104,28 +105,19 @@ export default function HomePage() {
         <div className="flex flex-col lg:flex-row justify-between items-start gap-24">
           <div className="space-y-12 max-w-sm">
             <h2 className="font-bold text-4xl tracking-tighter">OMNIA</h2>
-            <div className="space-y-6">
-              <p className="text-[11px] uppercase tracking-[0.3em] font-black text-nordic-muted">Archivos por Email</p>
-              <div className="flex gap-4">
-                <input
-                  type="email"
-                  placeholder="Tu correo electrónico"
-                  className="bg-transparent border-b border-nordic-border pb-2 outline-none text-sm w-full focus:border-black transition-colors"
-                />
-                <button className="text-[11px] uppercase tracking-widest font-black hover:text-nordic-accent transition-colors">Unirse</button>
-              </div>
-            </div>
+            <NewsletterCapture variant="footer" />
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-x-24 gap-y-12 text-[11px] uppercase tracking-widest font-medium text-nordic-muted">
             <div className="space-y-4">
               <p className="text-nordic-accent font-bold text-[10px]">Pedidos</p>
-              <Link href="#" className="block hover:text-black">Seguimiento</Link>
-              <Link href="#" className="block hover:text-black">Devoluciones</Link>
+              <Link href="/seguimiento" className="block hover:text-black">Seguimiento</Link>
+              <Link href="/devoluciones" className="block hover:text-black">Devoluciones</Link>
             </div>
             <div className="space-y-4">
               <p className="text-nordic-accent font-bold text-[10px]">Estudio</p>
-              <Link href="#" className="block hover:text-black">Ubicación</Link>
-              <Link href="#" className="block hover:text-black">Prensa</Link>
+              <Link href="/estudio" className="block hover:text-black">Manifiesto</Link>
+              <Link href="/ubicacion" className="block hover:text-black">Ubicación</Link>
+              <Link href="/prensa" className="block hover:text-black">Prensa</Link>
             </div>
             <div className="space-y-4">
               <p className="text-nordic-accent font-bold text-[10px]">Social</p>

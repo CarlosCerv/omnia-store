@@ -115,7 +115,7 @@ export default function Header() {
                                 onClick={() => { setMobileMenuOpen(false); signIn(); }}
                                 className="font-bold text-5xl tracking-tight text-nordic-muted text-left"
                             >
-                                Sign In
+                                Acceder
                             </button>
                         )}
                     </nav>

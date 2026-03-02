@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronRight, Heart, Share } from "lucide-react";
 import { getProductBySlug, PRODUCTS, formatPrice } from "@/lib/products";
 import { useCart } from "@/context/CartProvider";
+import StockIndicator from "@/features/product/components/StockIndicator";
 
 const DETAILS = [
     { title: "Detalles del Producto", content: "Confeccionado en una mezcla especializada de viscosa de bambú. Antimicrobiano, regulador de temperatura y excepcionalmente suave. Ajuste semi-entallado con dobladillo festoneado." },
@@ -121,12 +122,15 @@ export default function ProductPage() {
                             </button>
                         </div>
 
-                        <p className="text-xl font-bold mb-6">
+                        <p className="text-xl font-bold mb-2">
                             {formatPrice(product.price)} MXN
                         </p>
 
+                        {/* Stock indicator — se conectará a la BD cuando esté disponible */}
+                        <StockIndicator stock={7} series="Serie v1" />
+
                         {product.description && (
-                            <p className="text-sm text-nordic-muted leading-relaxed mb-6">{product.description}</p>
+                            <p className="text-sm text-nordic-muted leading-relaxed mt-5 mb-6">{product.description}</p>
                         )}
 
                         {/* ─── Colores ─── */}
@@ -167,8 +171,8 @@ export default function ProductPage() {
                                         key={size}
                                         onClick={() => setSelectedSize(size)}
                                         className={`h-11 border text-sm font-bold transition-all ${selectedSize === size
-                                                ? 'bg-black text-white border-black'           // ← estado seleccionado: usa #000 directo
-                                                : 'bg-white text-black border-nordic-border hover:border-black'
+                                            ? 'bg-black text-white border-black'           // ← estado seleccionado: usa #000 directo
+                                            : 'bg-white text-black border-nordic-border hover:border-black'
                                             }`}
                                     >
                                         {size}
