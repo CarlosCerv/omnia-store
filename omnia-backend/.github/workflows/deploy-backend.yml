@@ -1,0 +1,86 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# OMNIA Backend — Deploy Automático a VPS Ubuntu
+# Se activa en cada push a la rama `main`.
+#
+# Secrets requeridos en GitHub (Settings → Secrets → Actions):
+#   VPS_HOST      → IP o dominio del servidor (ej: 192.168.1.10)
+#   VPS_USER      → Usuario SSH del servidor (ej: ubuntu o root)
+#   VPS_SSH_KEY   → Clave SSH privada (sin passphrase) para autenticación
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: 🚀 Deploy Backend a VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy omnia-backend
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Checkout del código ──────────────────────────────────────────────
+      - name: 📥 Checkout del repositorio
+        uses: actions/checkout@v4
+
+      # ── 2. Configurar Node.js ───────────────────────────────────────────────
+      - name: 🟢 Configurar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # ── 3. Instalar dependencias locales (para validar el build) ────────────
+      - name: 📦 Instalar dependencias
+        run: npm ci
+
+      # ── 4. Despliegue en VPS remoto via SSH ────────────────────────────────
+      # Utiliza appleboy/ssh-action para ejecutar comandos en el servidor.
+      # La clave SSH (VPS_SSH_KEY) debe estar autorizada en ~/.ssh/authorized_keys del servidor.
+      - name: 🔑 Conectar al VPS y deployar
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          # Timeout de conexión SSH
+          timeout: 60s
+          # Comandos ejecutados en el servidor (en orden secuencial)
+          script: |
+            echo "─── Iniciando deploy de omnia-backend ───"
+
+            # Directorio del proyecto en el servidor
+            cd /var/www/omnia-backend
+
+            # Asegurarse de estar en la rama main
+            git fetch origin main
+            git checkout main
+            git pull origin main
+
+            # Instalar/actualizar dependencias de producción
+            echo "📦 Instalando dependencias..."
+            npm ci --omit=dev
+
+            # Compilar el proyecto (si Medusa requiere build step)
+            echo "🔨 Compilando el proyecto..."
+            npm run build
+
+            # Correr migraciones de base de datos de Medusa
+            # Esto aplica los cambios de esquema pendientes de forma segura
+            echo "🗄️ Corriendo migraciones de base de datos..."
+            npx medusa db:migrate
+
+            # Reiniciar el proceso con PM2 (gestor de procesos para Node.js en producción)
+            # Si el proceso no existe, PM2 lo crea; si existe, lo reinicia en zero-downtime
+            echo "♻️ Reiniciando el proceso con PM2..."
+            pm2 restart omnia-backend --update-env || pm2 start npm --name "omnia-backend" -- start
+            pm2 save
+
+            echo "✅ Deploy de omnia-backend completado exitosamente."
+
+      # ── 5. Notificación de éxito (opcional) ────────────────────────────────
+      # Puedes agregar aquí notificaciones a Slack, Discord, o email
+      - name: ✅ Deploy completado
+        run: echo "Deploy a producción completado exitosamente en $(date)"

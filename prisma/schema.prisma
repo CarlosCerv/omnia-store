@@ -46,6 +46,8 @@ model Order {
   date          DateTime    @default(now())
   total         Float
   status        String      @default("Pendiente") // 'Pendiente', 'Procesando', 'Enviado', 'Entregado', 'Cancelado'
+  shippingAddress Json?     // { name, address, city, state, zip, country }
+  stripePaymentId String?   // PaymentIntent ID para referencia
   
   items         OrderItem[]
   customer      Customer?   @relation(fields: [customerId], references: [id])
