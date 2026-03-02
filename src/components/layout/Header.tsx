@@ -6,6 +6,7 @@ import { useSession, signIn } from "next-auth/react";
 import { ShoppingBag, Search, User, Menu, X } from "lucide-react";
 import { useCart } from "@/context/CartProvider";
 import { PROMOTIONS } from "@/lib/promotions";
+import NavigationDropdown from "@/components/layout/NavigationDropdown";
 
 export default function Header() {
     const { data: session } = useSession();
@@ -44,8 +45,8 @@ export default function Header() {
 
                     {/* Nav Izquierda — solo desktop */}
                     <nav className="hidden md:flex items-center gap-12 font-medium text-[11px] uppercase tracking-[0.2em] text-nordic-muted">
-                        <Link href="/productos" className="hover:text-nordic-accent transition-colors">Catálogo</Link>
-                        <Link href="#about" className="hover:text-nordic-accent transition-colors">Estudio</Link>
+                        <NavigationDropdown />
+                        <Link href="/estudio" className="hover:text-nordic-accent transition-colors">Estudio</Link>
                     </nav>
 
                     {/* Logo centrado */}
