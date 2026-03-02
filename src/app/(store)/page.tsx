@@ -88,15 +88,38 @@ export default function HomePage() {
       </section>
 
       {/* ─── Philosophy Section ─── */}
-      <section className="bg-nordic-accent text-white py-48 px-12 text-center overflow-hidden relative">
-        <div className="absolute inset-0 opacity-10 pointer-events-none text-[20vw] font-bold tracking-tighter flex items-center justify-center whitespace-nowrap">
-          ARCHIVOS 2026
+      <section className="section-padding px-8 md:px-24 border-t border-nordic-border">
+        {/* Eyebrow */}
+        <div className="flex items-center gap-6 mb-16">
+          <span className="text-[10px] uppercase tracking-[0.6em] font-bold text-nordic-muted">Manifiesto — OMNIA Studio</span>
+          <div className="flex-1 h-px bg-nordic-border" />
         </div>
-        <div className="max-w-4xl mx-auto relative z-10 space-y-12">
-          <h2 className="text-5xl md:text-8xl font-bold tracking-tighter leading-none italic">La calidad es un acto de rebeldía.</h2>
-          <p className="text-lg md:text-2xl opacity-60 leading-relaxed font-light">
-            Rechazamos el ciclo del fast fashion. Cada pieza OMNIA es una adición permanente a tu silueta, diseñada para envejecer con dignidad.
+
+        {/* Headline editorial de ancho completo */}
+        <motion.h2
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1 }}
+          className="text-[13vw] md:text-[11vw] font-bold tracking-tighter leading-[0.88] text-nordic-accent mb-20"
+        >
+          La calidad<br />
+          <span className="italic font-light">es un acto</span><br />
+          de rebeldía.
+        </motion.h2>
+
+        {/* Columna de cuerpo + CTA */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-12 border-t border-nordic-border pt-12">
+          <p className="max-w-md text-nordic-muted leading-relaxed text-base md:text-lg font-light">
+            Rechazamos el ciclo del fast fashion. Cada pieza OMNIA es una adición permanente a tu silueta, diseñada para envejecer con dignidad durante décadas.
           </p>
+          <Link
+            href="/estudio"
+            className="group flex items-center gap-4 font-bold text-[11px] uppercase tracking-[0.4em] text-nordic-accent hover:gap-6 transition-all whitespace-nowrap"
+          >
+            Leer el Manifiesto
+            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+          </Link>
         </div>
       </section>
 
