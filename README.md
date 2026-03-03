@@ -1,31 +1,43 @@
 # OMNIA Platform v2.0
 
-OMNIA (que en latín significa "todo") es una plataforma e-commerce de alta gama diseñada bajo la estética **Nordic Gallery**. Este proyecto ha evolucionado de un prototipo visual a una infraestructura startup completa, enfocada en la moda de lujo minimalista y la excelencia operativa.
+OMNIA es una plataforma e-commerce de alta gama desarrollada bajo la narrativa estética Nordic Gallery. Este proyecto opera como una infraestructura startup completa, orientada a la comercialización de moda de lujo minimalista y a la excelencia operativa.
 
-Propiedad de: **Carlos Cervantes** © 2026. Todos los derechos reservados.
-
----
-
-## 🏛️ Visión del Proyecto
-OMNIA no es solo una tienda; es una galería digital donde cada producto es tratado como una pieza de exhibición. La plataforma prioriza:
-1. **Estética Industrial-Minimalista**: Uso masivo de whitespace, tipografía `Outfit` & `Inter`, y una paleta de colores neutros.
-2. **Localización Total**: Experiencia nativa en español para el mercado hispanohablante.
-3. **Escalabilidad Startup**: Arquitectura preparada para integraciones con PostgreSQL, Stripe, Clerk y Resend.
-
-## 🛠️ Stack Tecnológico Premium
-- **Framework**: [Next.js 16](https://nextjs.org) (App Router & Turbopack)
-- **UI & Styling**: Vanilla CSS + [Tailwind CSS v4](https://tailwindcss.com/)
-- **Animaciones**: [Framer Motion](https://www.framer.com/motion/)
-- **Iconografía**: [Lucide React](https://lucide.dev/)
-- **Tipografía**: Google Fonts (Outfit para encabezados, Inter para cuerpo)
-
-## 📋 Documentación de Soporte
-- [**Startup Roadmap**](./brain/a8a0623b-653b-4e47-ae37-5cf72dbc659c/startup_roadmap.md): Plan estratégico de 5 etapas para el lanzamiento.
-- [**Stack de Servicios**](./STACK_SERVICIOS.md): Listado detallado de infraestructura y costos.
-- [**Guía de Configuración**](./SETUP_GUIDE.md): Instrucciones técnicas para desarrolladores.
-
-## 🚀 Despliegue
-Optimizado para despliegue continuo en **Vercel**, garantizando un rendimiento superior mediante Edge Caching y optimización de imágenes nativa.
+Propiedad de: Carlos Cervantes © 2026. Todos los derechos reservados.
 
 ---
-**Desarrollado para OMNIA Studio por Carlos Cervantes.**
+
+## Visión del Proyecto
+
+OMNIA conceptualiza la experiencia de compra en línea como una galería digital donde cada producto se presenta como una pieza de exhibición. La plataforma se fundamenta en los siguientes pilares:
+
+1. **Estética Industrial-Minimalista**: Utilización estructurada del espacio en blanco (whitespace), tipografía sans-serif (Outfit e Inter) y una paleta de colores neutros estricta.
+2. **Localización Múltiple**: Experiencia nativa optimizada para el mercado hispanohablante.
+3. **Escalabilidad**: Arquitectura modular desacoplada, preparada para despliegue en infraestructuras propias (Zero-SaaS) e integraciones de terceros (Medusa.js, PostgreSQL, Resend).
+
+## Características Técnicas
+
+- **Framework Frontend**: Next.js (App Router)
+- **Framework Backend**: Medusa.js (Node.js)
+- **Base de Datos**: PostgreSQL
+- **Estilos y UI**: Vanilla CSS complementado con Tailwind CSS
+- **Interacciones**: Framer Motion
+- **Iconografía**: Lucide React
+- **Autenticación**: NextAuth.js (Google OAuth)
+- **Correos Transaccionales**: Resend API
+
+## Documentación de Referencia
+
+La documentación detallada se encuentra segmentada en los siguientes módulos:
+
+- `omnia-backend/OPERACIONES.md`: Manual operativo para el despliegue del backend, gestión de catálogo y automatización de servidores.
+- `omnia-backend/README.md`: Documentación técnica de la capa de API e integraciones de servidor.
+
+## Arquitectura de Despliegue
+
+El ecosistema OMNIA está diseñado para un despliegue híbrido eficiente:
+
+- **Frontend (Storefront & Admin)**: Optimizado para Edge Deployment a través de Vercel, aprovechando su CDN global y optimización nativa de activos.
+- **Backend (Medusa API & Base de Datos)**: Arquitectura auto-hospedada (Zero-SaaS) en servidor Linux (Ubuntu/Debian) mediante Nginx y PM2, con pipelines de Integración y Despliegue Continuo (CI/CD) orquestados mediante GitHub Actions.
+
+---
+Desarrollado para OMNIA Studio por Carlos Cervantes.

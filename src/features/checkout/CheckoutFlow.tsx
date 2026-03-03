@@ -1,20 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { loadStripe } from "@stripe/stripe-js";
-import {
-    Elements,
-    PaymentElement,
-    useStripe,
-    useElements,
-} from "@stripe/react-stripe-js";
 import { useCart } from "@/context/CartProvider";
 import { formatPrice } from "@/lib/products";
-import { CheckCircle, ArrowRight, Loader2 } from "lucide-react";
+import { CheckCircle, ArrowRight, Loader2, CreditCard, Building2 } from "lucide-react";
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
-
-// ─── Types ──────────────────────────────────────────────────────────────────
+// ─── Types ───────────────────────────────────────────────────────────────────
 interface ShippingData {
     name: string;
     email: string;
@@ -24,7 +15,15 @@ interface ShippingData {
     zip: string;
 }
 
-// ─── Step 1: Datos de Envío ──────────────────────────────────────────────────
+// ─── Banco Config ─────────────────────────────────────────────────────────────
+const BANK_INFO = {
+    bank: "BBVA México",
+    clabe: "012 320 0123456789 01",
+    beneficiary: "OMNIA Nordic Gallery S.A. de C.V.",
+    reference: "OMNIA-PEDIDO",
+};
+
+// ─── Step 1: Datos de Envío ───────────────────────────────────────────────────
 function ShippingStep({ onNext }: { onNext: (data: ShippingData) => void }) {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -49,9 +48,7 @@ function ShippingStep({ onNext }: { onNext: (data: ShippingData) => void }) {
             </div>
             <Field label="Dirección" name="address" placeholder="Calle, número, colonia" required />
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div className="col-span-1 md:col-span-1">
-                    <Field label="Ciudad" name="city" required />
-                </div>
+                <Field label="Ciudad" name="city" required />
                 <Field label="Estado" name="state" required />
                 <Field label="Código Postal" name="zip" required />
             </div>
@@ -66,108 +63,74 @@ function ShippingStep({ onNext }: { onNext: (data: ShippingData) => void }) {
     );
 }
 
-// ─── Step 2: Pago con Stripe ─────────────────────────────────────────────────
+// ─── Step 2: Instrucciones de Transferencia ───────────────────────────────────
 function PaymentStep({
-    clientSecret,
     shipping,
-    onSuccess,
-}: {
-    clientSecret: string;
-    shipping: ShippingData;
-    onSuccess: (orderId: string) => void;
-}) {
-    return (
-        <Elements
-            stripe={stripePromise}
-            options={{
-                clientSecret,
-                appearance: {
-                    theme: "stripe",
-                    variables: {
-                        colorPrimary: "#000000",
-                        borderRadius: "0px",
-                        fontFamily: "'Helvetica Neue', Arial, sans-serif",
-                    },
-                },
-            }}
-        >
-            <PaymentForm shipping={shipping} onSuccess={onSuccess} />
-        </Elements>
-    );
-}
-
-function PaymentForm({
-    shipping,
-    onSuccess,
+    orderId,
+    total,
+    onConfirm,
+    isProcessing,
 }: {
     shipping: ShippingData;
-    onSuccess: (orderId: string) => void;
+    orderId: string;
+    total: number;
+    onConfirm: () => void;
+    isProcessing: boolean;
 }) {
-    const stripe = useStripe();
-    const elements = useElements();
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!stripe || !elements) return;
-
-        setIsProcessing(true);
-        setError(null);
-
-        const { error: stripeError, paymentIntent } = await stripe.confirmPayment({
-            elements,
-            confirmParams: {
-                return_url: `${window.location.origin}/checkout?step=confirm`,
-                payment_method_data: {
-                    billing_details: {
-                        name: shipping.name,
-                        email: shipping.email,
-                    },
-                },
-            },
-            redirect: "if_required",
-        });
-
-        if (stripeError) {
-            setError(stripeError.message || "Error al procesar el pago.");
-            setIsProcessing(false);
-        } else if (paymentIntent?.status === "succeeded") {
-            onSuccess(paymentIntent.id.slice(-8).toUpperCase());
-        }
-    };
-
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            <h2 className="text-xs font-black uppercase tracking-[0.4em] mb-8">Método de Pago</h2>
-            <PaymentElement />
-            {error && (
-                <p className="text-sm text-red-600 font-medium">{error}</p>
-            )}
+        <div className="space-y-8">
+            <div>
+                <h2 className="text-xs font-black uppercase tracking-[0.4em] mb-2">Método de Pago</h2>
+                <p className="text-sm text-nordic-muted">Realiza una transferencia bancaria con los siguientes datos.</p>
+            </div>
+
+            {/* Datos bancarios */}
+            <div className="border border-nordic-border p-6 space-y-4 bg-neutral-50">
+                <div className="flex items-center gap-3 mb-2">
+                    <Building2 size={18} />
+                    <span className="text-[11px] font-black uppercase tracking-widest">{BANK_INFO.bank}</span>
+                </div>
+
+                <BankRow label="Beneficiario" value={BANK_INFO.beneficiary} />
+                <BankRow label="CLABE" value={BANK_INFO.clabe} copiable />
+                <BankRow label="Referencia" value={`${BANK_INFO.reference}-${orderId}`} copiable />
+                <BankRow label="Monto exacto" value={`$${formatPrice(total)} MXN`} highlight />
+            </div>
+
+            {/* Aviso */}
+            <div className="border-l-4 border-l-amber-400 pl-4 py-2">
+                <p className="text-xs text-neutral-700 leading-relaxed">
+                    <strong>Importante:</strong> tu pedido se procesará una vez que recibamos la
+                    transferencia (1-2 días hábiles). Asegúrate de incluir la referencia exacta
+                    y enviar el comprobante a <strong>studio@omnia.com</strong>
+                </p>
+            </div>
+
             <button
-                type="submit"
-                disabled={!stripe || isProcessing}
-                className="w-full h-14 bg-black text-white text-[11px] font-black uppercase tracking-[0.4em] hover:bg-neutral-800 transition-colors flex items-center justify-center gap-3 disabled:opacity-50 mt-4"
+                onClick={onConfirm}
+                disabled={isProcessing}
+                className="w-full h-14 bg-black text-white text-[11px] font-black uppercase tracking-[0.4em] hover:bg-neutral-800 transition-colors flex items-center justify-center gap-3 disabled:opacity-50"
             >
                 {isProcessing
-                    ? <><Loader2 size={16} className="animate-spin" /> Procesando...</>
-                    : "Confirmar Pago"
+                    ? <><Loader2 size={16} className="animate-spin" /> Registrando pedido...</>
+                    : <><CreditCard size={16} /> He realizado la transferencia</>
                 }
             </button>
-        </form>
+        </div>
     );
 }
 
-// ─── Step 3: Confirmación ────────────────────────────────────────────────────
+// ─── Step 3: Confirmación ─────────────────────────────────────────────────────
 function ConfirmationStep({ orderId, customerName }: { orderId: string; customerName: string }) {
     return (
         <div className="text-center py-12 space-y-8">
             <CheckCircle className="mx-auto text-black" size={48} strokeWidth={1} />
             <div className="space-y-3">
-                <p className="text-[10px] uppercase tracking-[0.5em] font-bold text-nordic-muted">Pedido Confirmado</p>
+                <p className="text-[10px] uppercase tracking-[0.5em] font-bold text-nordic-muted">Pedido Registrado</p>
                 <h2 className="text-4xl font-bold tracking-tighter">¡Gracias, {customerName.split(" ")[0]}!</h2>
                 <p className="text-nordic-muted text-sm leading-relaxed max-w-sm mx-auto">
-                    Tu pedido <strong>#{orderId}</strong> ha sido recibido. Recibirás un email de confirmación en breve.
+                    Tu pedido <strong>#{orderId}</strong> ha sido registrado. Recibirás un email de confirmación
+                    con los datos bancarios. Una vez recibida tu transferencia, confirmamos y enviamos.
                 </p>
             </div>
             <a
@@ -182,50 +145,57 @@ function ConfirmationStep({ orderId, customerName }: { orderId: string; customer
 
 // ─── Main CheckoutFlow ────────────────────────────────────────────────────────
 export default function CheckoutFlow() {
-    const { items, cartTotal, closeCart } = useCart();
+    const { items, cartTotal, clearCart } = useCart();
     const [step, setStep] = useState<"shipping" | "payment" | "confirmation">("shipping");
     const [shipping, setShipping] = useState<ShippingData | null>(null);
-    const [clientSecret, setClientSecret] = useState<string | null>(null);
     const [orderId, setOrderId] = useState("");
-    const [loadingPayment, setLoadingPayment] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [pendingOrderId, setPendingOrderId] = useState("");
 
-    const handleShippingNext = async (data: ShippingData) => {
+    const handleShippingNext = (data: ShippingData) => {
         setShipping(data);
-        setLoadingPayment(true);
+        // Generar ID de referencia de pedido único
+        const id = Math.random().toString(36).slice(2, 8).toUpperCase();
+        setPendingOrderId(id);
+        setStep("payment");
+    };
 
-        const res = await fetch("/api/checkout", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                amount: cartTotal,
-                metadata: {
-                    customerName: data.name,
-                    customerEmail: data.email,
-                    shippingAddress: JSON.stringify(data),
-                    items: JSON.stringify(items.map((i) => ({
+    const handleTransferConfirm = async () => {
+        if (!shipping) return;
+        setIsProcessing(true);
+
+        try {
+            const res = await fetch("/api/checkout", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    orderId: pendingOrderId,
+                    shipping,
+                    items: items.map((i) => ({
                         slug: i.slug,
                         name: i.name,
                         price: i.price,
                         quantity: i.quantity,
                         size: i.size,
                         color: i.color,
-                    }))),
-                },
-            }),
-        });
+                    })),
+                    total: cartTotal,
+                    paymentMethod: "bank_transfer",
+                }),
+            });
 
-        const { clientSecret: secret, error } = await res.json();
-        if (error) { alert(error); setLoadingPayment(false); return; }
-
-        setClientSecret(secret);
-        setLoadingPayment(false);
-        setStep("payment");
-    };
-
-    const handlePaymentSuccess = (id: string) => {
-        setOrderId(id);
-        closeCart();
-        setStep("confirmation");
+            if (res.ok) {
+                clearCart?.();
+                setOrderId(pendingOrderId);
+                setStep("confirmation");
+            } else {
+                throw new Error("Error al registrar el pedido");
+            }
+        } catch (err) {
+            alert("Hubo un error al registrar tu pedido. Intenta de nuevo.");
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     if (items.length === 0 && step !== "confirmation") {
@@ -260,14 +230,14 @@ export default function CheckoutFlow() {
                 )}
 
                 {step === "shipping" && <ShippingStep onNext={handleShippingNext} />}
-                {step === "payment" && loadingPayment && (
-                    <div className="flex items-center gap-3 py-12">
-                        <Loader2 size={18} className="animate-spin" />
-                        <span className="text-sm text-nordic-muted">Preparando pago seguro...</span>
-                    </div>
-                )}
-                {step === "payment" && !loadingPayment && clientSecret && shipping && (
-                    <PaymentStep clientSecret={clientSecret} shipping={shipping} onSuccess={handlePaymentSuccess} />
+                {step === "payment" && shipping && (
+                    <PaymentStep
+                        shipping={shipping}
+                        orderId={pendingOrderId}
+                        total={cartTotal}
+                        onConfirm={handleTransferConfirm}
+                        isProcessing={isProcessing}
+                    />
                 )}
                 {step === "confirmation" && (
                     <ConfirmationStep orderId={orderId} customerName={shipping?.name || "Cliente"} />
@@ -301,7 +271,7 @@ export default function CheckoutFlow() {
                             <span className="text-[10px] uppercase tracking-widest font-medium text-nordic-muted">Total</span>
                             <span className="text-2xl font-bold">{formatPrice(cartTotal)} MXN</span>
                         </div>
-                        <p className="text-[10px] text-nordic-muted">Impuestos incluidos. Envío calculado al momento del procesamiento.</p>
+                        <p className="text-[10px] text-nordic-muted">Impuestos incluidos. Envío calculado al procesar el pedido.</p>
                     </div>
                 </div>
             )}
@@ -309,7 +279,7 @@ export default function CheckoutFlow() {
     );
 }
 
-// ─── Field Helper ─────────────────────────────────────────────────────────────
+// ─── Helper Components ────────────────────────────────────────────────────────
 function Field({ label, name, type = "text", placeholder, required }: {
     label: string; name: string; type?: string; placeholder?: string; required?: boolean;
 }) {
@@ -317,12 +287,28 @@ function Field({ label, name, type = "text", placeholder, required }: {
         <div className="space-y-2">
             <label className="text-[10px] uppercase tracking-widest font-bold text-neutral-600">{label}</label>
             <input
-                type={type}
-                name={name}
-                placeholder={placeholder}
-                required={required}
+                type={type} name={name} placeholder={placeholder} required={required}
                 className="w-full border border-nordic-border px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors bg-white"
             />
+        </div>
+    );
+}
+
+function BankRow({ label, value, copiable = false, highlight = false }: {
+    label: string; value: string; copiable?: boolean; highlight?: boolean;
+}) {
+    const copy = () => navigator.clipboard.writeText(value);
+    return (
+        <div className="flex items-center justify-between gap-4">
+            <span className="text-[10px] uppercase tracking-widest text-neutral-500 font-bold shrink-0">{label}</span>
+            <span className={`text-sm font-mono text-right ${highlight ? "font-black text-base" : "font-medium"}`}>
+                {value}
+                {copiable && (
+                    <button onClick={copy} className="ml-2 text-[10px] uppercase tracking-widest text-neutral-400 hover:text-black transition-colors font-sans">
+                        copiar
+                    </button>
+                )}
+            </span>
         </div>
     );
 }

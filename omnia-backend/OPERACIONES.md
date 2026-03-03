@@ -1,197 +1,187 @@
-# OMNIA — Guía de Operaciones del Backend
-
-> Manual interno del equipo técnico.  
-> Stack: Medusa.js (Node.js) · PostgreSQL · PM2 · GitHub Actions  
-> Última actualización: Marzo 2026
+# OMNIA Backend — Manual de Operaciones
+Stack Tecnológico: Medusa.js | PostgreSQL | PM2 | Nginx | GitHub Actions
+Última actualización: Marzo 2026
 
 ---
 
-## Tabla de Contenidos
+## Índice de Scripts de Automatización
 
-1. [Levantar el servidor local](#1-levantar-el-servidor-local)
-2. [Acceder al Panel de Administración](#2-acceder-al-panel-de-administración)
-3. [Cómo agregar un nuevo producto (Serie de Producción)](#3-cómo-agregar-un-nuevo-producto)
-4. [Cómo gestionar el inventario](#4-cómo-gestionar-el-inventario)
-5. [Cómo funciona el despliegue automático](#5-cómo-funciona-el-despliegue-automático)
-6. [Comandos PM2 para operación manual](#6-comandos-pm2-para-operación-manual)
+| Archivo | Función Principal | Entorno de Ejecución |
+|:--|:--|:--|
+| `scripts/setup-local.sh` | Inicialización del entorno de desarrollo | Equipo Local |
+| `scripts/setup-server.sh` | Aprovisionamiento de infraestructura Ubuntu | Servidor de Producción (root) |
+| `scripts/deploy.sh` | Secuencia de despliegue manual de emergencia | Servidor de Producción |
+
+Nota: Para otorgar permisos de ejecución utilice `chmod +x scripts/*.sh`.
 
 ---
 
-## 1. Levantar el servidor local
-
-### Prerrequisitos
-- Node.js 20+
-- PostgreSQL corriendo localmente
-- Base de datos `omnia_medusa` creada
+## 1. Configuración de Entorno Local
 
 ```bash
-# 1. Clonar el backend (si es la primera vez)
-git clone https://github.com/tu-org/omnia-backend.git
+# Iniciar clonado del repositorio
+git clone https://github.com/[ORGANIZACION]/omnia-backend.git
 cd omnia-backend
 
-# 2. Instalar dependencias
-npm install
+# Ejecutar script de automatización de entorno
+chmod +x scripts/setup-local.sh
+bash scripts/setup-local.sh
+```
 
-# 3. Copiar y editar el archivo de entorno
-cp .env.template .env
-# Edita .env con tu DATABASE_URL, JWT_SECRET y COOKIE_SECRET
+El script de configuración automatiza las siguientes tareas:
+1. Validación de dependencias base (Node.js 20+ y PostgreSQL).
+2. Instalación de paquetes NPM.
+3. Generación de entorno local (`.env`) a partir de plantilla.
+4. Creación de base de datos relacional `omnia_medusa`.
+5. Ejecución de migraciones de esquema de Medusa.js.
+6. Aprovisionamiento de credenciales de administrador.
 
-# 4. Correr migraciones de DB (solo primera vez o tras nuevas migraciones)
-npx medusa db:migrate
-
-# 5. Crear usuario administrador (solo primera vez)
-npx medusa user -e admin@omnia.com -p tu_password
-
-# 6. Iniciar el servidor en modo desarrollo
+Para iniciar el servidor de desarrollo:
+```bash
 npm run dev
-```
-
-El servidor estará disponible en `http://localhost:9000`.
-
----
-
-## 2. Acceder al Panel de Administración
-
-Con el servidor corriendo, abre tu navegador en:
-
-```
-http://localhost:9000/app
-```
-
-Usa las credenciales que creaste con `npx medusa user -e ... -p ...`.
-
-En **producción**, el panel está disponible en:
-
-```
-https://backend.tu-dominio.com/app
+# API Endpoint: http://localhost:9000
+# Panel Administrativo: http://localhost:9000/app
 ```
 
 ---
 
-## 3. Cómo Agregar un Nuevo Producto
+## 2. Aprovisionamiento de Servidor (Producción)
 
-### Desde el panel de Medusa Admin:
-
-1. **Ir a Products** → Click en **"New Product"**
-2. **Información general**:
-   - `Title`: Nombre del producto (ej: `Omnia Signature Black`)  
-   - `Subtitle`: Descripción corta (ej: `Algodón orgánico de alto gramaje`)
-   - `Description`: Descripción completa editorial
-3. **Organizatión**:
-   - `Collection`: Asignar a colección (ej: `Signature`)
-   - `Tags`: Agregar etiquetas (ej: `esencial`, `temporada`)
-4. **Variants** (Variantes = combinaciones de Talla/Color):
-   - Click en **"Add variant"**
-   - Definir `Options`: `Size` (S, M, L, XL) y `Color` (Onix, Hueso)
-   - Definir el precio en MXN para cada variante
-5. **Thumbnail**: Subir imagen principal del producto
-6. **Media**: Subir imágenes adicionales de galería
-7. Click **"Save and publish"**
-
-> 💡 **El producto aparecerá automáticamente en el storefront** en la próxima carga de página (el storefront consulta la API de Medusa).
-
----
-
-## 4. Cómo Gestionar el Inventario
-
-### Flujo de inventario en Medusa:
-
-Medusa maneja el inventario a nivel de **variante** (combinación SKU = Talla + Color).
-
-1. **Ver stock**: Ve a **Products** → Seleccionar producto → Tab **"Variants"**
-2. **Actualizar stock**: Click en la variante → Campo **"Inventory"** → Ingresar cantidad
-3. **Stock en 0**: El producto se marca automáticamente como `out_of_stock` en la API
-4. **Reservas**: Al completarse un pago, Medusa descuenta automáticamente el stock de la variante comprada
-
-### En el Storefront:
-El componente `ProductDetailClient.tsx` consulta la disponibilidad de stock vía la API de Medusa. Si el stock es 0, el botón "Añadir a la Bolsa" se desactiva automáticamente.
-
----
-
-## 5. Cómo Funciona el Despliegue Automático
-
-### Flujo completo de un `git push`:
-
-```
-Desarrollador hace git push a main
-         │
-         ▼
-GitHub Actions detecta el push
-(.github/workflows/deploy-backend.yml)
-         │
-         ▼
-Runner ubuntu-latest:
-  ├── Checkout del código
-  ├── Configura Node.js 20
-  └── Instala dependencias locales (validación)
-         │
-         ▼
-Connexión SSH al VPS (usando secrets: VPS_HOST, VPS_USER, VPS_SSH_KEY)
-         │
-         ▼
-Comandos en el servidor:
-  ├── git pull origin main       → Descarga el nuevo código
-  ├── npm ci --omit=dev          → Instala deps de producción
-  ├── npm run build              → Compila el proyecto
-  ├── npx medusa db:migrate      → Aplica migraciones de DB
-  └── pm2 restart omnia-backend  → Reinicia el proceso (zero-downtime)
-         │
-         ▼
-✅ Deploy completado en ~2-3 minutos
-```
-
-> ⚠️ **Importante**: Si la migración de base de datos falla, PM2 **NO** reinicia el proceso. El deploy se detiene y GitHub Actions marca el job como fallido.
-
----
-
-## 6. Comandos PM2 para Operación Manual
-
-Conectarse al servidor por SSH y ejecutar:
+Requisito previo: Servidor virtual corriendo Ubuntu 22.04 LTS con privilegios de root (sudo).
 
 ```bash
-# ─── Estado general ──────────────────────────────
-# Ver todos los procesos y su estado
-pm2 status
+# Transferir archivo de aprovisionamiento al servidor
+scp scripts/setup-server.sh ubuntu@IP_SERVIDOR:/tmp/
 
-# Ver logs en tiempo real del backend
-pm2 logs omnia-backend
+# Iniciar secuencia de configuración remota
+ssh ubuntu@IP_SERVIDOR
+sudo bash /tmp/setup-server.sh
+```
 
-# Ver los últimos 200 líneas de logs
-pm2 logs omnia-backend --lines 200
+El script ejecutará las siguientes instalaciones y configuraciones:
+- Instalación de Node.js v20 mediante repositorio NodeSource.
+- Instalación global de PM2 para gestión de procesos en segundo plano.
+- Instalación y securización de PostgreSQL.
+- Configuración de Nginx como proxy inverso hacia el puerto 9000.
+- Generación y vinculación de certificados SSL vía Certbot (Let's Encrypt).
+- Generación de claves criptográficas y configuración del archivo `.env` de producción.
 
-# ─── Gestión del proceso ─────────────────────────
-# Reiniciar el backend (carga el nuevo código si ya se hizo pull)
-pm2 restart omnia-backend
-
-# Reiniciar recargando variables de entorno
+Post-configuración, es imperativo establecer las variables externas:
+```bash
+sudo nano /var/www/omnia-backend/.env
+# Inserte valores para RESEND_API_KEY, STRIPE_SECRET_KEY, etc.
 pm2 restart omnia-backend --update-env
-
-# Detener el backend (sin eliminarlo de PM2)
-pm2 stop omnia-backend
-
-# Iniciar el backend si fue detenido
-pm2 start omnia-backend
-
-# ─── Iniciar desde cero (si PM2 no tiene el proceso) ─
-cd /var/www/omnia-backend
-pm2 start npm --name "omnia-backend" -- start
-pm2 save
-
-# ─── Guardar configuración de PM2 ────────────────
-# Para que PM2 reinicie los procesos automáticamente tras un reboot del servidor
-pm2 startup
-pm2 save
-
-# ─── Monitoreo ───────────────────────────────────
-# Dashboard interactivo de CPU y memoria
-pm2 monit
 ```
 
 ---
 
-## Contacto y Soporte
+## 3. Gestión de Catálogo de Productos
 
-Para incidencias en producción, revisar primero:
-1. `pm2 logs omnia-backend` — errores del proceso Node
-2. Vercel Logs — errores del storefront Next.js
-3. Stripe Dashboard → Webhooks — eventos de pago fallidos
+Para dar de alta nuevos productos en el sistema, siga este flujo operativo:
+
+1. Autentíquese en el panel administrativo: `https://backend.dominio.com/app`
+2. Navegue a la sección **Products** y seleccione **New Product**.
+3. Complete los metadatos requeridos:
+   - `Title`: Ejemplo `Omnia Signature Black`
+   - `Description`: Redacción editorial de producto.
+   - `Collection`: Selección de categoría aplicable.
+4. En la sección **Variants**, agregue variantes considerando la matriz de opciones (Talla y Color).
+5. Asigne el precio en moneda local (MXN) a cada variante.
+6. Aprovisione la galería fotográfica en la sección **Media**.
+7. Guarde y cambie el estado a **Published** para propagación inmediata a la API del Storefront.
+
+---
+
+## 4. Control de Inventario
+
+La plataforma opera bajo el supuesto de control de existencias a nivel de variante SKU (ej. Talla M + Color Onix).
+
+- Navegue a **Products -> [Seleccionar Producto] -> Variants**.
+- Modifique los valores en el campo estructural `Inventory`.
+- La plataforma transaccionará existencias automáticamente tras confirmaciones de pago reales o transferencias liquidadas.
+- Variantes con inventario cero se abstraen automáticamente en la interfaz como "Agotado".
+
+---
+
+## 5. Pipeline de Despliegue Continuo (CI/CD)
+
+Flujo de integración y distribución orquestado por GitHub Actions:
+
+```text
+git push origin main
+       │
+       ▼
+GitHub Actions (deploy-backend.yml)
+  ├── 1. Checkout del código fuente
+  ├── 2. Configuración de runtime Node.js 20
+  └── 3. Ejecución SSH en Servidor Remoto
+        ├── git pull origin main
+        ├── npm ci --omit=dev
+        ├── npm run build
+        ├── npx medusa db:migrate
+        └── pm2 restart omnia-backend
+```
+
+En caso de fallo sistemático del pipeline, se recurre a la ejecución manual:
+```bash
+ssh ubuntu@IP_SERVIDOR
+cd /var/www/omnia-backend
+bash scripts/deploy.sh
+
+# Para obviar fase de migraciones de base de datos:
+bash scripts/deploy.sh --skip-migrations
+```
+
+---
+
+## 6. Referencia Operativa PM2
+
+Comandos para la monitorización y gestión del proceso principal Node.js:
+
+```bash
+pm2 status                        # Visualización del estado de procesos activos
+pm2 logs omnia-backend            # Transmisión de registros stdout/stderr
+pm2 restart omnia-backend         # Reinicio en caliente del proceso
+pm2 restart omnia-backend --update-env  # Reinicio inyectando los últimos valores .env
+pm2 stop omnia-backend            # Detención controlada del hilo
+pm2 monit                         # Métricas de consumo CPU/RAM en la terminal
+```
+
+---
+
+## 7. Diccionario de Variables de Entorno (Servidor)
+
+Matriz de configuración del entorno productivo:
+
+| Variable Clave | Función Principal | Carácter |
+|:--|:--|:--|
+| `DATABASE_URL` | Cadena de conexión PostgreSQL (formato DSN) | Requerida |
+| `JWT_SECRET` | Clave simétrica para firma de tokens JSON Web | Requerida |
+| `COOKIE_SECRET` | Clave generadora para firmas de sesión | Requerida |
+| `STORE_CORS` | Origen Cross-Origin autorizado (Storefront) | Requerida |
+| `ADMIN_CORS` | Origen Cross-Origin autorizado (Panel Administrativo) | Requerida |
+| `RESEND_API_KEY` | Clave API de la plataforma de comunicaciones | Correos |
+
+---
+
+## 8. Gestión de Secretos de Repositorio
+
+Para habilitar la pipeline de GitHub Actions, defina los siguientes valores en `Settings -> Secrets -> Actions`:
+
+| Secreto de Infraestructura | Definición de Valor |
+|:--|:--|
+| `VPS_HOST` | Dirección IPv4 pública o FQDN del servidor destino |
+| `VPS_USER` | Identidad del usuario remoto (habitualmente `ubuntu` o `root`) |
+| `VPS_SSH_KEY` | Contenido de la clave criptográfica privada ED25519 o RSA |
+
+Instrucciones para aprovisionamiento seguro de claves de despliegue:
+```bash
+# Entorno local del administrador
+ssh-keygen -t ed25519 -C "github-actions-omnia" -f ~/.ssh/omnia_deploy_key -N ""
+
+# Inserción de huella pública en el servidor
+ssh-copy-id -i ~/.ssh/omnia_deploy_key.pub ubuntu@IP_SERVIDOR
+
+# El output del siguiente comando debe ser copiado como VPS_SSH_KEY
+cat ~/.ssh/omnia_deploy_key
+```

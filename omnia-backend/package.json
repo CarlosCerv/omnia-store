@@ -1,0 +1,25 @@
+{
+    "name": "omnia-backend",
+    "version": "1.0.0",
+    "private": true,
+    "description": "OMNIA Nordic Gallery — Medusa.js e-commerce backend",
+    "scripts": {
+        "dev": "medusa develop",
+        "start": "medusa start",
+        "build": "medusa build",
+        "seed": "tsx scripts/seed-products.ts",
+        "migrate": "medusa db:migrate"
+    },
+    "dependencies": {
+        "@medusajs/medusa": "^2.0.0",
+        "@medusajs/framework": "^2.0.0",
+        "@medusajs/file-local": "^2.0.0",
+        "@medusajs/payment-stripe": "^2.0.0",
+        "resend": "^4.0.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20",
+        "tsx": "^4.0.0",
+        "typescript": "^5"
+    }
+}

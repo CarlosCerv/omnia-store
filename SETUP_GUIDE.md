@@ -1,72 +1,67 @@
-# Guía de Configuración OMNIA Storefront
+# Guía de Configuración Técnica — OMNIA Storefront
 
-Bienvenido al repositorio de la tienda online **OMNIA**. Este proyecto utiliza **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS v4** y **TypeScript** con una arquitectura escalable basada en "características" (Feature-Driven).
-
-Esta guía detalla los pasos para poner en marcha el proyecto en un entorno local.
+Documentación de arquitectura e inicialización para el repositorio principal de la plataforma e-commerce **OMNIA**. Este proyecto operativiza **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS v4** y **TypeScript** estructurado mediante una topología enfocada a características (Feature-Driven Architecture).
 
 ---
 
-## 1. Requisitos Previos
+## 1. Prerrequisitos de Sistema
 
-Asegúrate de tener instalados los siguientes componentes antes de comenzar:
+El entorno de desarrollo requiere la instalación de las siguientes versiones de runtime:
 
--   **Node.js**: Versión `20.x` o superior (se recomienda usar `nvm` o `fnm` para gestionar versiones).
--   **npm**: Versión `10.x` o superior. Alternativamente puedes usar `pnpm` o `yarn`.
+- **Node.js**: Versión `20.x` o superior (se sugiere gestionar el runtime mediante herramientas como `nvm` o `fnm`).
+- **npm**: Versión `10.x` o superior. 
 
-## 2. Instalación
+## 2. Instalación de Dependencias
 
-Clona el repositorio o navega hasta el directorio raíz del proyecto (`omnia-store`) y ejecuta el siguiente comando para instalar todas las dependencias:
+Tras la obtención remota del repositorio, posicione su terminal en la raíz estructural (`omnia-store`) y ejecute la resolución de dependencias:
 
 ```bash
 npm install
 ```
 
-Esto instalará librerías clave como:
+Este proceso descargará y enlazará las librerías Core:
 - `next`, `react`, `react-dom`
 - `tailwindcss`, `@tailwindcss/postcss`
-- `framer-motion` (para animaciones y transiciones suaves)
-- `lucide-react` (para iconografía minimalista)
-- `zustand` (para el manejo de estado global ligero)
+- `framer-motion` (Framework de interpolación y renderizado animado)
+- `lucide-react` (Matriz iconográfica estandarizada)
+- Interfaces de validación (`zod`) y utilidades de base de datos (`@prisma/client`).
 
-## 3. Ejecutar el Servidor de Desarrollo
+## 3. Inicialización de Servidor de Desarrollo
 
-Una vez instaladas las dependencias, inicia el servidor de desarrollo local:
+Inicie el motor Turbopack integrado para previsualización interactiva:
 
 ```bash
 npm run dev
 ```
 
-Abre tu navegador web y dirígete a [http://localhost:3000](http://localhost:3000) para ver la aplicación corriendo. La página se actualizará automáticamente (Hot Module Replacement) cada vez que modifiques código en la carpeta `src`.
+El servidor web escuchará las peticiones en el puerto asignado genéricamente `http://localhost:3000`. Cualquier modificación local en la carpeta `src` desencadenará una compilación Delta (Hot Module Replacement) automáticamente.
 
-## 4. Scripts y Comandos Útiles
+## 4. Comandos NPM Documentados
 
-El archivo `package.json` incluye los siguientes comandos principales:
+Definiciones registradas en el `package.json`:
 
--   **`npm run dev`**: Inicia la aplicación en modo desarrollo.
--   **`npm run build`**: Construye la aplicación optimizada para producción. Es crucial ejecutar esto antes de un despliegue para asegurar que no hay errores de TypeScript o compilación.
--   **`npm run start`**: Inicia el servidor de producción (requiere haber ejecutado `npm run build` previamente).
--   **`npm run lint`**: Analiza el código buscando errores de estilo, importaciones sin uso, y vulnerabilidades en TypeScript y React usando ESLint.
+- **`npm run dev`**: Despliegue de entorno interactivo no optimizado.
+- **`npm run build`**: Compilación estricta y generación de HTML estático y funciones Serverless preparadas para producción.
+- **`npm run start`**: Ejecución de las compilaciones cacheadas localmente tras un build.
+- **`npm run lint`**: Validación sintáctica y estricta bajo directivas de ESLint y el compilador de TypeScript (`tsc`).
 
-## 5. Arquitectura y Estructura del Código
+## 5. Topología del Repositorio
 
-El código fuente se encuentra dentro de la carpeta `src/`. El proyecto sigue una arquitectura **Feature-Driven**, lo cual significa que el código está organizado por funcionalidad o dominio de negocio:
+La carpeta interna `src/` modulariza lógicamente la lógica de negocio a fin de evitar dependencias circulares:
 
 ```text
 src/
-├── app/                  # Sistema de enrutamiento App Router de Next.js (pages, layouts)
-├── components/           # Componentes UI globales (Layouts, UI primitives)
-│   └── layout/           # Componentes globales de estructura (Header, etc.)
-├── features/             # Módulos específicos del negocio (Core de la escala)
-│   ├── cart/             # Lógica y UI del carrito
-│   ├── home/             # Componentes específicos de la página de inicio (Hero)
-│   └── products/         # Pantallas de detalle de productos y lógica relacionada
-├── lib/                  # Utilidades como clientes de API o helpers
-└── types/                # Interfaces y tipos globales compartidos
+├── app/                  # Topología y jerarquía de rutas basado en Next.js App Router. Integración de API Routes.
+├── components/           # Primitivas modulares aisladas e independientes de dominio.
+│   └── ui/               # Botones, Elementos Flotantes (Toasts), Dropdowns.
+├── features/             # Agrupaciones complejas de negocio que implementan Hooks y UI propia.
+│   └── checkout/         # Componentes vinculados a transacciones financieras.
+├── lib/                  # Código puramente transaccional (Conexión Prisma, utilidades Mailer, wrappers API Medusa).
+└── types/                # Definiciones estáticas de interfaces TypeScript.
 ```
 
-## 6. Siguientes Pasos Recomendados
+## 6. Siguientes Fases de Integración
 
-Si estás integrándote al proyecto, algunas de las primeras tareas a visualizar son:
-1.  **Revisar el estado global**: El archivo de configuración de `zustand` (próximo a implementarse en `src/lib/store` o dentro de `src/features/cart`).
-2.  **Integración de Datos**: Conectar el frontend con el JSON estático de productos y posteriormente un CMS / Headless Commerce.
-3.  **Pruebas**: Explorar la futura configuración de `vitest` / `playwright`.
+Para colaboradores integrándose a la infraestructura:
+1.  **Conexión de Backend**: OMNIA opera ahora un fallback en 3 niveles (Medusa.js SDK -> Prisma PostgreSQL Directo -> Mocks). Revise `src/services/productService.ts` para entender la inyección.
+2.  **Transaccionalidad**: El proceso de conversión de compra delega su operación de notificaciones post-venta al API de Resend tras completar transacciones bancarias. Variables críticas existen en el `.env.example`.
