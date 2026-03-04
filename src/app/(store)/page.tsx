@@ -123,37 +123,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── Footer ─── */}
-      <footer className="py-24 px-8 md:px-24 border-t border-nordic-border">
-        <div className="flex flex-col lg:flex-row justify-between items-start gap-24">
-          <div className="space-y-12 max-w-sm">
-            <h2 className="font-bold text-4xl tracking-tighter">OMNIA</h2>
-            <NewsletterCapture variant="footer" />
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-x-24 gap-y-12 text-[11px] uppercase tracking-widest font-medium text-nordic-muted">
-            <div className="space-y-4">
-              <p className="text-nordic-accent font-bold text-[10px]">Pedidos</p>
-              <Link href="/seguimiento" className="block hover:text-black">Seguimiento</Link>
-              <Link href="/devoluciones" className="block hover:text-black">Devoluciones</Link>
-            </div>
-            <div className="space-y-4">
-              <p className="text-nordic-accent font-bold text-[10px]">Estudio</p>
-              <Link href="/estudio" className="block hover:text-black">Manifiesto</Link>
-              <Link href="/ubicacion" className="block hover:text-black">Ubicación</Link>
-              <Link href="/prensa" className="block hover:text-black">Prensa</Link>
-            </div>
-            <div className="space-y-4">
-              <p className="text-nordic-accent font-bold text-[10px]">Social</p>
-              <Link href="#" className="block hover:text-black">Instagram</Link>
-              <Link href="#" className="block hover:text-black">Behance</Link>
-            </div>
-          </div>
-        </div>
-        <div className="mt-24 pt-12 border-t border-nordic-border flex justify-between items-center text-[10px] uppercase tracking-widest opacity-40">
-          <p>© 2026 Carlos Cervantes — OMNIA Studio México</p>
-          <p>Todos los derechos reservados</p>
-        </div>
-      </footer>
     </main>
   );
 }

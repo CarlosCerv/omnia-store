@@ -104,7 +104,7 @@ export default function Header() {
                         <Link href="/productos" onClick={() => setMobileMenuOpen(false)} className="font-bold text-5xl tracking-tight">
                             Catálogo
                         </Link>
-                        <Link href="#about" onClick={() => setMobileMenuOpen(false)} className="font-bold text-5xl tracking-tight">
+                        <Link href="/estudio" onClick={() => setMobileMenuOpen(false)} className="font-bold text-5xl tracking-tight">
                             Estudio
                         </Link>
                         {session ? (
